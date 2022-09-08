@@ -1,5 +1,5 @@
 ---
-# tasks file for control-plane
+# tasks file for kubernetes-dependencies
 
 - name: Print a message
   debug:
