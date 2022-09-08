@@ -1,0 +1,6 @@
+---
+# tasks file for control-plane
+
+- name: Print a message
+  debug:
+    msg: "this task runs before the example role"
