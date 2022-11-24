@@ -40,9 +40,9 @@ jobs:
         run: |
           packer validate -syntax-only packer/master.pkr.hcl
 
-      - name: build master using packer
-        run: |
-          packer build packer/master.pkr.hcl
+      # - name: build master using packer
+      #   run: |
+      #     packer build packer/master.pkr.hcl
   
   workerPacker:
     runs-on: ubuntu-latest
@@ -83,9 +83,9 @@ jobs:
         run: |
           packer validate -syntax-only packer/worker.pkr.hcl
 
-      - name: build worker using packer
-        run: |
-          packer build packer/worker.pkr.hcl
+      # - name: build worker using packer
+      #   run: |
+      #     packer build packer/worker.pkr.hcl
 
   terraform:
     runs-on: ubuntu-latest
