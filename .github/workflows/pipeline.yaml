@@ -89,7 +89,7 @@ jobs:
 
   terraform:
     runs-on: ubuntu-latest
-    needs: [masterPacker, workerPacker]
+    # needs: [masterPacker, workerPacker]
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
