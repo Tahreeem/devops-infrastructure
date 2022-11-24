@@ -73,3 +73,4 @@ jobs:
         working-directory: ./Terraform
         id: apply
         run: terraform apply -auto-approve
+
