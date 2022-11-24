@@ -99,12 +99,12 @@ jobs:
           terraform_version: 1.2.2
 
       - name: Terraform Init
-        working-directory: ./terraform
+        working-directory: terraform
         id: init
         run: terraform init
 
       - name: Terraform Apply
-        working-directory: ./terraform
+        working-directory: terraform
         id: apply
         run: terraform apply -auto-approve
 
