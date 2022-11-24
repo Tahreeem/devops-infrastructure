@@ -1,0 +1,92 @@
+at /ansible folder level:
+1) docker run -it ubuntu:20.04 bash
+2) apt update
+3) apt install ansible gnupg systemctl -Y
+the -Y answers yes which you otherwise have to provide
+4) ansible-playbook --version
+5) apt install apache2
+to check ansible-playbook is installed
+
+----------------------
+at root level of folder:
+1)docker run -it -v $PWD:/devops-infrastructure  ubuntu:20.04 bash
+ansible-playbook playbook.yml
+
+
+
+----------------------
+kubeadm init --pod-network-cidr=10.244.0.0/16 >> cluster_initialized.txt
+sudo cp /etc/kubernetes/admin.conf /home/ubuntu/.kube/config
+sudo chown ubuntu:ubuntu /home/ubuntu/.kube/config
+kubectl get nodes
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.txt
+>> appends to file while > replaces file contents
+kubeadm token create --print-join-command
+if you run sudo !! it will run your previous command as root user
+
+
+
+
+kubeadm join 10.0.0.71:6443 --token oisre3.261gf594mhayz5bx \
+	--discovery-token-ca-cert-hash sha256:473a437bdec42000e16dda6410f02756cc6222682cf8a893e8627f39cc7b8392
+ubuntu@ip-10-0-0-71:~$ sudo cp /etc/kubernetes/admin.conf /home/ubuntu/.kube/config
+ubuntu@ip-10-0-0-71:~$ ls /home/ubuntu/.kube/config
+/home/ubuntu/.kube/config
+ubuntu@ip-10-0-0-71:~$ ls -l /home/ubuntu/.kube/config
+-rw------- 1 root root 5633 Sep 29 16:12 /home/ubuntu/.kube/config
+ubuntu@ip-10-0-0-71:~$ sudo chown ubuntu:ubuntu /home/ubuntu/.kube/config
+ubuntu@ip-10-0-0-71:~$ ls
+ cluster_initialized.txt  '~tahreem.butt'
+ubuntu@ip-10-0-0-71:~$ ls -l /home/ubuntu/.kube/config
+-rw------- 1 ubuntu ubuntu 5633 Sep 29 16:12 /home/ubuntu/.kube/config
+ubuntu@ip-10-0-0-71:~$ ls -l
+total 12
+-rw-rw-r-- 1 ubuntu ubuntu 4989 Sep 29 16:03  cluster_initialized.txt
+drwx------ 3 ubuntu ubuntu 4096 Sep 29 15:17 '~tahreem.butt'
+ubuntu@ip-10-0-0-71:~$ kubectl get nodes
+NAME           STATUS     ROLES                  AGE   VERSION
+ip-10-0-0-71   NotReady   control-plane,master   11m   v1.22.4
+ubuntu@ip-10-0-0-71:~$ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.txt
+ubuntu@ip-10-0-0-71:~$ cat pod_network_setup.txt
+namespace/kube-flannel created
+clusterrole.rbac.authorization.k8s.io/flannel created
+clusterrolebinding.rbac.authorization.k8s.io/flannel created
+serviceaccount/flannel created
+configmap/kube-flannel-cfg created
+daemonset.apps/kube-flannel-ds created
+ubuntu@ip-10-0-0-71:~$ kubeadm token create --print-join-command
+kubeadm join 10.0.0.71:6443 --token c3gvdv.4wryvmo8vwj4i431 --discovery-token-ca-cert-hash sha256:473a437bdec42000e16dda6410f02756cc6222682cf8a893e8627f39cc7b8392
+
+
+
+
+
+// output on instance due to use_data script running and creating tokens and then us running parameter store command
+
+I1025 16:08:26.101533    1151 version.go:255] remote version is much newer: v1.25.3; falling back to: stable-1.22
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+jllt9r.db2qr4f87s9lxkri
+sha256:43d676fbee3d252653417299187523aa6f5c475a7f39b40b6354b7c88349be6a
+Cloud-init v. 22.3.4-0ubuntu1~20.04.1 running 'modules:final' at Tue, 25 Oct 2022 16:08:18 +0000. Up 56.40 seconds.
+Cloud-init v. 22.3.4-0ubuntu1~20.04.1 finished at Tue, 25 Oct 2022 16:09:43 +0000. Datasource DataSourceEc2Local.  Up 141.33 seconds
+ubuntu@ip-10-0-0-71:~$ aws --version
+aws-cli/2.8.5 Python/3.9.11 Linux/5.15.0-1022-aws exe/x86_64.ubuntu.20 prompt/off
+ubuntu@ip-10-0-0-71:~$ aws ssm put-parameter --name /test --value jllt9r.db2qr4f87s9lxkri
+
+Unable to locate credentials. You can configure credentials by running "aws configure".
+
+
+
+curl ifconfig.co
+
+
+
+tail /var/log/cloud-init-output.log -f
+
+
+terraform plan -target module.network
+terraform apply -target module.network
+
+
+watch -n 1 kubectl get nodes

@@ -1,6 +1,111 @@
 ---
 # tasks file for kubernetes-dependencies
+# -vars:
+#   list:
+#       - worker
+#       - something
 
 - name: Print a message
   debug:
     msg: "this task runs before the example role"
+
+- name: Create a Docker config directory if it does not exist
+  when: k8node in ['master', 'worker']
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+
+- name: Creating a file with content
+  when: k8node in ['master', 'worker']
+  copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+        "exec-opts": ["native.cgroupdriver=systemd"]
+      }
+
+- name: Update apt and install docker.io
+  when: k8node in ['master', 'worker']
+  apt:
+    name: docker.io
+    state: present
+    update_cache: true
+
+- name: Install required system packages
+  when: k8node in ['master', 'worker']
+  apt:
+    name:
+      - apt-transport-https
+    state: present
+
+- name: Add Kubernetes apt Key
+  when: k8node in ['master', 'worker']
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add Kubernetes Repository
+  when: k8node in ['master', 'worker']
+  apt_repository:
+    filename: kubernetes
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+
+- name: Install Kublet
+  when: k8node in ['master', 'worker']
+  apt:
+    name: kubelet=1.22.4-00
+    state: present
+    update_cache: true
+
+# we will have to run Kubeadm with a subcommand when cluster is running
+- name: Install Kubeadm
+  when: k8node in ['master', 'worker']
+  apt:
+    name: kubeadm=1.22.4-00
+    state: present
+
+- name: Install Kubectl for master only
+  when: k8node in ['master']
+  apt:
+    name: kubectl=1.22.4-00
+    state: present
+    force: true
+
+- name: Create a .kube directory if it does not exist
+  when: k8node in ['master']
+  become: yes
+  become_user: ubuntu
+  ansible.builtin.file:
+    path: $HOME/.kube
+    state: directory
+    mode: 0755
+
+- name: Install package dependencies.
+  when: k8node in ['master', 'worker']
+  package: name={{ item }} state=present
+  with_items:
+    - unzip
+
+- name: Download the awscli bundle.
+  when: k8node in ['master', 'worker']
+  get_url: url=https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip dest=/tmp/awscli-bundle.zip
+  register: aws_cli_download_bundle
+
+- name: Unarchive the installer.
+  shell: unzip /tmp/awscli-bundle.zip -d /tmp
+  when: aws_cli_download_bundle.changed and k8node in ['master', 'worker']
+  register: aws_cli_unarchive_installer
+
+- name: Install awscli package.
+  shell: /tmp/aws/install
+  args:
+    creates: /usr/bin/aws
+  when: aws_cli_unarchive_installer.changed and k8node in ['master', 'worker']
+
+- name: Install jq
+  when: k8node in ['worker']
+  apt:
+    name: jq
+    state: present
+    update_cache: true

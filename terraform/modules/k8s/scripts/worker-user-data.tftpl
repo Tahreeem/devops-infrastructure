@@ -1,0 +1,25 @@
+#!/bin/bash
+sleep 300
+echo "starting worker script"
+
+output=$(aws ssm get-parameter --name /token)
+while [[ "$?" != 0 ]] # can add time limit check as well because loop could fail for other reasons such as permissions issue
+do
+   echo "var loop 1 not found; sleeping"
+   sleep 5
+   output=$(aws ssm get-parameter --name /token)
+done
+token=$(echo $output | jq -r .Parameter.Value)
+
+
+output=$(aws ssm get-parameter --name /cert_hash)
+while [[ "$?" != 0 ]] # can add time limit check as well because loop could fail for other reasons such as permissions issue
+do
+   echo "var loop 2 not found; sleeping"
+   sleep 5
+   output=$(aws ssm get-parameter --name /cert_hash)
+done
+hash=$(echo $output | jq -r .Parameter.Value)
+
+echo "attempting to join cluster"
+kubeadm join ${master_ip}:6443 --token $token --discovery-token-ca-cert-hash $hash

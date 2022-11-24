@@ -1,0 +1,7 @@
+---
+- hosts: default
+  become: yes
+  roles:
+    - role: kubernetes-dependencies
+      vars:
+        k8node: master

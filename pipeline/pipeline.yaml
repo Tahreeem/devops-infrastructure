@@ -1,0 +1,75 @@
+name: myworkflow
+on: [push]
+jobs:
+  testJob:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies Including Ansible
+        run: |
+          python -m pip install ansible
+          which ansible-playbook
+          ansible-playbook --version
+          PATH=$PATH:/opt/hostedtoolcache/Python/3.9.13/x64/bin/ansible-playbook
+          echo $PATH
+
+      - run: |
+          ansible-playbook --version
+
+      # # validate templates
+      # - name: Validate Template
+      #   uses: hashicorp/packer-github-actions@master
+      #   with:
+      #     command: validate
+      #     arguments: -syntax-only
+      #     target: packer/template.pkr.hcl
+
+      # - name: Build Template
+      #   uses: hashicorp/packer-github-actions@master
+      #   with:
+      #     command: build
+      #     target: packer/template.pkr.hcl
+
+# we have to change the steps that use docker (hashicorp ones) and install things directly on github server 
+
+      - name: Installs latest Packer
+        uses: hashicorp-contrib/setup-packer@v1
+        with:
+          packer-version: 1.7.0
+
+      # group installing package steps together i.e. ansible, terraform etc
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.2.2
+
+      - name: validating using packer
+        run: |
+          packer validate -syntax-only packer/template.pkr.hcl
+
+      - name: build using packer
+        run: |
+          packer build packer/template.pkr.hcl
+
+      - name: Terraform Init
+        working-directory: ./Terraform
+        id: init
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: ./Terraform
+        id: apply
+        run: terraform apply -auto-approve
