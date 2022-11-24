@@ -40,9 +40,9 @@ jobs:
   #       run: |
   #         packer validate -syntax-only packer/master.pkr.hcl
 
-  #     # - name: build master using packer
-  #     #   run: |
-  #     #     packer build packer/master.pkr.hcl
+  #     - name: build master using packer
+  #       run: |
+  #         packer build packer/master.pkr.hcl
   
   # workerPacker:
   #   runs-on: ubuntu-latest
@@ -89,8 +89,16 @@ jobs:
 
   terraform:
     runs-on: ubuntu-latest
-    # needs: [masterPacker, workerPacker]
+    needs: [masterPacker, workerPacker]
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - uses: actions/checkout@v3
 
       # group installing package steps together i.e. ansible, terraform etc
       - name: Install Terraform
@@ -99,10 +107,12 @@ jobs:
           terraform_version: 1.2.2
 
       - name: Terraform Init
+        working-directory: ./terraform
         id: init
-        run: ls -la
+        run: terraform init
 
       - name: Terraform Apply
+        working-directory: ./terraform
         id: apply
         run: terraform apply -auto-approve
 
